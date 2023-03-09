@@ -6,7 +6,6 @@ import mjolnir from '../../resources/img/mjolnir.png';
 import Spinner from '../spinner/spinner';
 
 class RandomChar extends Component{
-
     state = {
         character:{},
         loading: true,
@@ -39,8 +38,9 @@ class RandomChar extends Component{
         this.updateChar();
     }
 
-    onRandomButtonClick = () => {
+    onRandomButtonClick = (e) => {
         this.updateChar();
+
     }
 
     render(){
