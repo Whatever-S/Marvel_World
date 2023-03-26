@@ -10,22 +10,44 @@ class CharList extends Component {
     state = {
         charList: [],
         loading: true,
-        error: false
+        error: false,
+        newCharactersLoading: false,
+        offset: 210,
+        charEnded: false
+
     }
     
     marvelService = new MarvelService();
 
     componentDidMount() {
-        this.marvelService.getAllCharacters()
+        this.onRequest()
+    }
+
+    onRequest = (offset) =>{
+        this.onCharListLoading();
+        this.marvelService.getAllCharacters(offset)
             .then(this.onCharListLoaded)
             .catch(this.onError)
     }
 
-    onCharListLoaded = (charList) => {
+    onCharListLoading = ()=>{
         this.setState({
-            charList,
-            loading: false
+            newCharactersLoading: true
         })
+    }
+
+    onCharListLoaded = (newCharList) => {
+        let ended = false
+        if (newCharList.length < 9)
+            ended = true
+
+        this.setState(({charList, offset, charEnded}) => ({
+            charList: [...charList, ...newCharList],
+            loading: false,
+            newCharactersLoading: false,
+            offset: offset + 9,
+            charEnded: ended
+        }))
     }
 
     onError = () => {
@@ -45,13 +67,13 @@ class CharList extends Component {
             return (
                 <li 
                     className="char__item"
-                    key={item.id}>
+                    key={item.id}
+                    onClick={()=>this.props.onCharSelected(item.id)}>
                         <img src={item.thumbnail} alt={item.name} style={imgStyle}/>
                         <div className="char__name">{item.name}</div>
                 </li>
             )
         });
-        // А эта конструкция вынесена для центровки спиннера/ошибки
         return (
             <ul className="char__grid">
                 {items}
@@ -61,7 +83,7 @@ class CharList extends Component {
 
     render() {
 
-        const {charList, loading, error} = this.state;
+        const {charList, loading, error, newCharactersLoading, offset, charEnded} = this.state;
         
         const items = this.renderItems(charList);
 
@@ -74,7 +96,10 @@ class CharList extends Component {
                 {errorMessage}
                 {spinner}
                 {content}
-                <button className="button button__main button__long">
+                <button className="button button__main button__long"
+                disabled={newCharactersLoading}
+                style={{'display': charEnded ? 'none': 'block'}}
+                onClick={()=>this.onRequest(offset)}>
                     <div className="inner">load more</div>
                 </button>
             </div>
